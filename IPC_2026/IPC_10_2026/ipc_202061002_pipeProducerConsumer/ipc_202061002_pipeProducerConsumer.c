@@ -61,6 +61,8 @@ int main(void)
 
 
 /*
+//---------------------------------------------------
+Producer writes numbers, consumer reads them.
 
 Concept:
 
@@ -76,4 +78,10 @@ Producer
    v
 Consumer
 
+This is a simple introduction to the 
+producer-consumer pattern.
+
+//---------------------------------------------------
 */
+
+

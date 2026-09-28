@@ -66,12 +66,13 @@ int main(void)
 
 
 /*
-
+//---------------------------------------------------
 Important:
 
 write end open
       ↓
 read() waits for data
+
 
 write end closed
       ↓
@@ -81,6 +82,7 @@ read() returns 0
       ↓
 EOF
 
+//---------------------------------------------------
 */
 
 

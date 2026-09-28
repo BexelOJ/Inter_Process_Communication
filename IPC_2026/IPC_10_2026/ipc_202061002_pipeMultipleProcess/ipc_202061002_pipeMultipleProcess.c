@@ -79,6 +79,10 @@ int main(void)
 
 
 /*
+//---------------------------------------------------
+Multiple children communicate through the same pipe.
+
+Architecture:
 
              ┌── Child 1 ──┐
              │              │
@@ -86,4 +90,7 @@ int main(void)
              │              │
              └── Child 3 ──┘
 
+//---------------------------------------------------
 */
+
+

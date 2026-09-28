@@ -80,8 +80,13 @@ int main(void)
     return 0;
 }
 
+
 /*
-* 
+//---------------------------------------------------
+An unnamed pipe is normally unidirectional. 
+To implement parent ↔ child communication, 
+use two pipes.
+
 Architecture:
 
              PIPE 1
@@ -93,6 +98,7 @@ Parent ------------------> Child
 Parent <------------------ Child
        childToParent
 
+//---------------------------------------------------
 */
 
 

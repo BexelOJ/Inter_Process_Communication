@@ -58,6 +58,8 @@ int main(void)
 
 
 /*
+//---------------------------------------------------
+Demonstrates blocking behavior
 
 The important observation:
 
@@ -70,7 +72,7 @@ Parent writes
   ↓
 read() wakes up
 
+//---------------------------------------------------
 */
-
 
 

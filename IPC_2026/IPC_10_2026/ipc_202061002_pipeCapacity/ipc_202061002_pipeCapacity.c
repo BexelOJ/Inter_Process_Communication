@@ -58,6 +58,11 @@ int main(void)
 
 
 /*
+//---------------------------------------------------
+Important:
+
+This program is deliberately designed to
+eventually block:
 
 write()
 write()
@@ -71,4 +76,7 @@ write()
   ↓
 BLOCKED
 
+//---------------------------------------------------
 */
+
+
