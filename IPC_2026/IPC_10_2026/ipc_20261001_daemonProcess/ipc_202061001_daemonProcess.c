@@ -1,92 +1,92 @@
+/*
+ * ipc_20261001_daemonProcess.c
+ *
+ * Demonstrates:
+ *     - fork()
+ *     - setsid()
+ *     - chdir()
+ *     - umask()
+ *     - closing standard file descriptors
+ *     - daemon process creation
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
+// ---------------------------------------------------
 int main(void)
 {
     pid_t pid;
-    int fd;
 
+    printf("Parent: Starting daemon creation\n");
+
+    // ---------------------------------------------------
+    // Step 1: Create child process
+    // ---------------------------------------------------
     pid = fork();
 
     if (pid < 0)
     {
         perror("fork");
-        return 1;
+        return EXIT_FAILURE;
     }
 
+    // ---------------------------------------------------
+    // Parent process exits
+    // ---------------------------------------------------
     if (pid > 0)
     {
-        printf("Parent exiting\n");
-        return 0;
+        printf("Parent: Child created, PID = %d\n", pid);
+        return EXIT_SUCCESS;
     }
 
-    /* Create new session */
+    // ---------------------------------------------------
+    // Child becomes session leader
+    // ---------------------------------------------------
     if (setsid() < 0)
     {
         perror("setsid");
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    /* Change working directory */
+    // ---------------------------------------------------
+    // Change working directory
+    // ---------------------------------------------------
     if (chdir("/") < 0)
     {
         perror("chdir");
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    /* Set file permissions */
+    // ---------------------------------------------------
+    // Set file creation mask
+    // ---------------------------------------------------
     umask(0);
 
-    /* Redirect standard file descriptors */
-    fd = open("/dev/null", O_RDWR);
+    // ---------------------------------------------------
+    // Close standard file descriptors
+    // ---------------------------------------------------
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 
-    if (fd < 0)
-    {
-        perror("open");
-        return 1;
-    }
-
-    dup2(fd, STDIN_FILENO);
-    dup2(fd, STDOUT_FILENO);
-    dup2(fd, STDERR_FILENO);
-
-    if (fd > STDERR_FILENO)
-    {
-        close(fd);
-    }
-
+    // ---------------------------------------------------
+    // Daemon loop
+    // ---------------------------------------------------
     while (1)
     {
-        sleep(10);
+        /*
+         * Daemon work goes here.
+         */
+
+        sleep(5);
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-
-/*
-//---------------------------------------------------
-fork()
-  ↓
-parent exits
-  ↓
-setsid()
-  ↓
-new session
-  ↓
-chdir("/")
-  ↓
-umask(0)
-  ↓
-redirect stdin/stdout/stderr
-  ↓
-background process
-
-//---------------------------------------------------
-*/
 
 
