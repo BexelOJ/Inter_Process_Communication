@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 
 void signalHandler(int signalNumber)
 {
-    printf("Handler received signal: %d\n",
-        signalNumber);
+    printf("SIGUSR1 handler executed.\n");
 }
 
 int main(void)
@@ -17,18 +17,16 @@ int main(void)
     sigemptyset(&signalSet);
     sigaddset(&signalSet, SIGUSR1);
 
-    printf("PID: %d\n", getpid());
-
-    /*
-     * Block SIGUSR1.
-     */
-    printf("Blocking SIGUSR1 for 10 seconds...\n");
+    printf("Blocking SIGUSR1...\n");
 
     if (sigprocmask(SIG_BLOCK, &signalSet, NULL) == -1)
     {
         perror("sigprocmask");
-        return 1;
+        return EXIT_FAILURE;
     }
+
+    printf("PID: %d\n", getpid());
+    printf("Send SIGUSR1 now.\n");
 
     sleep(10);
 
@@ -37,32 +35,19 @@ int main(void)
     if (sigprocmask(SIG_UNBLOCK, &signalSet, NULL) == -1)
     {
         perror("sigprocmask");
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    printf("SIGUSR1 is now unblocked.\n");
+    printf("SIGUSR1 unblocked.\n");
 
-    while (1)
-    {
-        pause();
-    }
-
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
-/*
- 
-Blocking and unblocking signals using a signal mask.
+// FROM ANOTHER TERMINAL
+
+// kill -USR1 <PID>
 
 
-While it is sleeping:
-
-kill -USR1 <PID>
-
-The signal is blocked initially and becomes deliverable after SIG_UNBLOCK.
-
-
-*/
 
 

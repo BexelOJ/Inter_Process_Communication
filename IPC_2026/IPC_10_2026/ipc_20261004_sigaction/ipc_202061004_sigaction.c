@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 
 void signalHandler(int signalNumber)
 {
-    printf("sigaction handler received signal: %d\n",
-        signalNumber);
+    printf("Signal received: %d\n", signalNumber);
 }
 
 int main(void)
@@ -18,38 +18,21 @@ int main(void)
 
     action.sa_flags = 0;
 
-    if (sigaction(SIGUSR1, &action, NULL) == -1)
+    if (sigaction(SIGINT, &action, NULL) == -1)
     {
         perror("sigaction");
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    printf("PID: %d\n", getpid());
-    printf("Waiting for SIGUSR1...\n");
+    printf("Process running. Press Ctrl+C.\n");
 
     while (1)
     {
         pause();
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-
-/*
-
-Modern POSIX-style signal handling using sigaction()
-
-
-The important structure is:
-
-struct sigaction
-        |
-        +-- sa_handler
-        +-- sa_mask
-        +-- sa_flags
-
-
-*/
 
 

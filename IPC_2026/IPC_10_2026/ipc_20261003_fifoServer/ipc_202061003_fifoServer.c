@@ -1,56 +1,83 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <string.h>
 
-#define FIFO_PATH "/tmp/ipc_fifo_client"
+#define FIFO_NAME "/tmp/ipc_fifo_server"
 
 int main(void)
 {
     int fd;
-    char buffer[100];
+    char buffer[256];
 
-    if (mkfifo(FIFO_PATH, 0666) == -1)
+    /* Create FIFO */
+    if (mkfifo(FIFO_NAME, 0666) == -1)
     {
         perror("mkfifo");
     }
 
-    printf("FIFO server started.\n");
-    printf("Waiting for client...\n");
+    printf("FIFO Server started.\n");
+    printf("Waiting for client messages...\n");
 
-    fd = open(FIFO_PATH, O_RDONLY);
-
-    if (fd == -1)
+    while (1)
     {
-        perror("open");
-        return 1;
-    }
+        /*
+         * Open FIFO for reading.
+         *
+         * This blocks until a writer opens the FIFO.
+         */
+        fd = open(FIFO_NAME, O_RDONLY);
 
-    ssize_t bytesRead;
+        if (fd == -1)
+        {
+            perror("open");
+            unlink(FIFO_NAME);
+            return EXIT_FAILURE;
+        }
 
-    bytesRead = read(fd, buffer, sizeof(buffer) - 1);
+        ssize_t bytesRead = read(
+            fd,
+            buffer,
+            sizeof(buffer) - 1
+        );
 
-    if (bytesRead > 0)
-    {
+        close(fd);
+
+        if (bytesRead == -1)
+        {
+            perror("read");
+            continue;
+        }
+
+        if (bytesRead == 0)
+        {
+            continue;
+        }
+
         buffer[bytesRead] = '\0';
 
-        printf("Server received: %s", buffer);
+        printf("Server received: %s\n", buffer);
+
+        if (strcmp(buffer, "exit") == 0)
+        {
+            printf("Server shutting down.\n");
+            break;
+        }
     }
 
-    close(fd);
+    unlink(FIFO_NAME);
 
-    unlink(FIFO_PATH);
-
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
-/*
-//---------------------------------------------------
-FIFO server corresponding to the client.
+// FROM ANOTHER TERMINAL:
 
-//---------------------------------------------------
-*/
+// echo "Hello Server" > /tmp/ipc_fifo_server
+// echo "This is message 2" > /tmp/ipc_fifo_server
+// echo "exit" > /tmp/ipc_fifo_server
+
 
 

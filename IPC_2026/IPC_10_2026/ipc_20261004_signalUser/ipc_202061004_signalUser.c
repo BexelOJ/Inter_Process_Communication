@@ -1,48 +1,39 @@
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 
 void signalHandler(int signalNumber)
 {
     if (signalNumber == SIGUSR1)
     {
-        printf("Received SIGUSR1\n");
+        printf("SIGUSR1 received.\n");
     }
     else if (signalNumber == SIGUSR2)
     {
-        printf("Received SIGUSR2\n");
+        printf("SIGUSR2 received.\n");
     }
 }
 
 int main(void)
 {
-    printf("PID: %d\n", getpid());
-
     signal(SIGUSR1, signalHandler);
     signal(SIGUSR2, signalHandler);
 
-    printf("Waiting for user signals...\n");
+    printf("PID: %d\n", getpid());
+    printf("Waiting for user-defined signals...\n");
 
     while (1)
     {
         pause();
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
-/*
+// FROM ANOTHER TERMINAL
 
-Demonstrates user-defined signals SIGUSR1 and SIGUSR2
-
-
-From another terminal:
-
-kill -USR1 <PID>
-kill -USR2 <PID>
-
-
-*/
-
-
+// kill -USR1 <PID>
+// and 
+// kill -USR2 <PID>

@@ -1,8 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <signal.h>
+#include <unistd.h>
 #include <sys/wait.h>
+
+void signalHandler(int signalNumber)
+{
+    if (signalNumber == SIGUSR1)
+    {
+        printf("Child: SIGUSR1 received.\n");
+    }
+}
 
 int main(void)
 {
@@ -10,82 +18,56 @@ int main(void)
 
     pid = fork();
 
-    if (pid < 0)
+    if (pid == -1)
     {
         perror("fork");
-        return 1;
+        return EXIT_FAILURE;
     }
 
     if (pid == 0)
     {
-        /*
-         * Child process.
-         */
-        printf("Child started\n");
+        /* Child */
+
+        signal(SIGUSR1, signalHandler);
+
         printf("Child PID: %d\n", getpid());
+        printf("Child waiting for signal...\n");
 
         while (1)
         {
-            printf("Child is running...\n");
-            sleep(1);
+            pause();
         }
     }
+    else
+    {
+        /* Parent */
 
-    /*
-     * Parent.
-     */
-    printf("Parent PID: %d\n", getpid());
-    printf("Child PID : %d\n", pid);
+        printf("Parent PID: %d\n", getpid());
+        printf("Child PID: %d\n", pid);
 
-    sleep(3);
+        sleep(2);
 
-    printf("\nParent sending SIGSTOP\n");
+        printf("Parent sending SIGUSR1...\n");
 
-    kill(pid, SIGSTOP);
+        if (kill(pid, SIGUSR1) == -1)
+        {
+            perror("kill");
+            return EXIT_FAILURE;
+        }
 
-    sleep(3);
+        sleep(2);
 
-    printf("Parent sending SIGCONT\n");
+        printf("Parent terminating child...\n");
 
-    kill(pid, SIGCONT);
+        kill(pid, SIGTERM);
 
-    sleep(3);
+        wait(NULL);
 
-    printf("Parent sending SIGTERM\n");
+        printf("Child terminated.\n");
+    }
 
-    kill(pid, SIGTERM);
-
-    waitpid(pid, NULL, 0);
-
-    printf("Child terminated.\n");
-
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-
-/*
-* 
-Uses signals to control another process.
-The parent starts a child. The parent then sends:
-
-SIGSTOP
-SIGCONT
-SIGTERM
-
-to the child.
-
-
-This demonstrates signals as a process-control mechanism:
-
-Parent
-  |
-  +---- SIGSTOP ---> Child
-  |
-  +---- SIGCONT ---> Child
-  |
-  +---- SIGTERM ---> Child
-
-
-*/
 
 

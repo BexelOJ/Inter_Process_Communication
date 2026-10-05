@@ -1,46 +1,59 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <errno.h>
+#include <string.h>
 
-#define FIFO_PATH "/tmp/ipc_fifo_nonblocking"
+#define FIFO_NAME "/tmp/ipc_fifo_nonblocking"
 
 int main(void)
 {
-    int fd;
+    int fifoId;
+    char buffer[256];
 
-    if (mkfifo(FIFO_PATH, 0666) == -1)
+    /* Create FIFO */
+    if (mkfifo(FIFO_NAME, 0666) == -1)
     {
-        perror("mkfifo");
+        if (errno != EEXIST)
+        {
+            perror("mkfifo");
+            return EXIT_FAILURE;
+        }
     }
 
     printf("Opening FIFO in non-blocking mode...\n");
 
-    fd = open(FIFO_PATH, O_RDONLY | O_NONBLOCK);
+    /*
+     * O_NONBLOCK:
+     * open() will not wait for a writer.
+     */
+    fifoId = open(FIFO_NAME, O_RDONLY | O_NONBLOCK);
 
-    if (fd == -1)
+    if (fifoId == -1)
     {
         perror("open");
-        unlink(FIFO_PATH);
-        return 1;
+        unlink(FIFO_NAME);
+        return EXIT_FAILURE;
     }
 
-    printf("FIFO opened without waiting for writer.\n");
+    printf("FIFO opened successfully.\n");
 
-    char buffer[100];
-
-    ssize_t bytesRead;
-
-    bytesRead = read(fd, buffer, sizeof(buffer) - 1);
+    /*
+     * Try to read without blocking.
+     */
+    ssize_t bytesRead = read(
+        fifoId,
+        buffer,
+        sizeof(buffer) - 1
+    );
 
     if (bytesRead == -1)
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
         {
-            printf("No data available.\n");
-            printf("read() did not block.\n");
+            printf("No data available right now.\n");
         }
         else
         {
@@ -49,7 +62,7 @@ int main(void)
     }
     else if (bytesRead == 0)
     {
-        printf("EOF received.\n");
+        printf("No writer is connected.\n");
     }
     else
     {
@@ -58,37 +71,12 @@ int main(void)
         printf("Received: %s\n", buffer);
     }
 
-    close(fd);
+    close(fifoId);
 
-    unlink(FIFO_PATH);
+    unlink(FIFO_NAME);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-
-/*
-//---------------------------------------------------
-Uses O_NONBLOCK
-
-
-Important difference:
-
-Blocking:
-
-open/read
-   ↓
-wait
-
-
-Non-blocking:
-
-open/read
-   ↓
-return immediately
-   ↓
-EAGAIN
-
-//---------------------------------------------------
-*/
 
 

@@ -1,64 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 
-#define FIFO_PATH "/tmp/ipc_fifo_client"
+#define FIFO_NAME "/tmp/ipc_fifo_server"
 
 int main(void)
 {
-    int fd;
-    char message[100];
+    int fifoId;
+    char message[256];
 
-    printf("Enter message: ");
+    printf("FIFO Client started.\n");
 
-    if (fgets(message, sizeof(message), stdin) == NULL)
-    {
-        return 1;
-    }
+    /*
+     * Open FIFO for writing.
+     *
+     * This will block until the server
+     * opens the FIFO for reading.
+     */
+    printf("Opening FIFO...\n");
 
-    if (mkfifo(FIFO_PATH, 0666) == -1)
-    {
-        perror("mkfifo");
-    }
+    fifoId = open(FIFO_NAME, O_WRONLY);
 
-    fd = open(FIFO_PATH, O_WRONLY);
-
-    if (fd == -1)
+    if (fifoId == -1)
     {
         perror("open");
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    write(fd, message, strlen(message));
+    printf("Connected to FIFO server.\n");
 
-    printf("Client sent: %s", message);
+    while (1)
+    {
+        printf("Client: ");
 
-    close(fd);
+        if (fgets(message, sizeof(message), stdin) == NULL)
+        {
+            break;
+        }
 
-    return 0;
+        /* Remove newline */
+        message[strcspn(message, "\n")] = '\0';
+
+        /*
+         * Send message to server.
+         */
+        if (write(fifoId, message, strlen(message) + 1) == -1)
+        {
+            perror("write");
+            break;
+        }
+
+        /*
+         * Exit condition.
+         */
+        if (strcmp(message, "exit") == 0)
+        {
+            break;
+        }
+    }
+
+    close(fifoId);
+
+    printf("FIFO Client terminated.\n");
+
+    return EXIT_SUCCESS;
 }
 
-
-/*
-//---------------------------------------------------
-Simple FIFO client.
-
-
-Architecture:
-
-Client
-   |
-   | write()
-   v
-FIFO
-   |
-   v
-Server
-
-//---------------------------------------------------
-*/
 
 

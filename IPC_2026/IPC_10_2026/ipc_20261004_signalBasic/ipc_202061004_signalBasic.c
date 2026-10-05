@@ -1,28 +1,24 @@
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
+
+void signalHandler(int signalNumber)
+{
+    printf("Signal received: %d\n", signalNumber);
+}
 
 int main(void)
 {
-    printf("Process PID: %d\n", getpid());
+    signal(SIGUSR1, signalHandler);
 
-    printf("Sending SIGUSR1 to myself...\n");
+    printf("Raising SIGUSR1...\n");
 
-    kill(getpid(), SIGUSR1);
+    raise(SIGUSR1);
 
-    printf("This line will not execute with default SIGUSR1 action.\n");
+    printf("Program continues after signal.\n");
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-
-/*
-
-Basic kill() + SIGUSR1
-
-SIGUSR1 has the default action of terminating the process.
-
-
-*/
 
 

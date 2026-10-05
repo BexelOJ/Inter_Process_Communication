@@ -1,69 +1,45 @@
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 
 int main(void)
 {
     sigset_t signalSet;
-    int signalNumber;
+    int receivedSignal;
 
     sigemptyset(&signalSet);
 
     sigaddset(&signalSet, SIGUSR1);
-    sigaddset(&signalSet, SIGUSR2);
 
     /*
-     * Block these signals.
+     * Block SIGUSR1.
+     *
+     * sigwait() will receive it synchronously.
      */
     if (sigprocmask(SIG_BLOCK, &signalSet, NULL) == -1)
     {
         perror("sigprocmask");
-        return 1;
+        return EXIT_FAILURE;
     }
 
     printf("PID: %d\n", getpid());
-    printf("Waiting synchronously for SIGUSR1/SIGUSR2...\n");
+    printf("Waiting for SIGUSR1...\n");
 
-    while (1)
+    if (sigwait(&signalSet, &receivedSignal) != 0)
     {
-        if (sigwait(&signalSet, &signalNumber) != 0)
-        {
-            perror("sigwait");
-            return 1;
-        }
-
-        printf("sigwait received signal: %d\n",
-            signalNumber);
+        perror("sigwait");
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    printf("Received signal: %d\n", receivedSignal);
+
+    return EXIT_SUCCESS;
 }
 
 
-/*
+// FROM ANOTHER TERMINAL
 
-Wait synchronously for a signal using sigwait()
-
-
-Unlike a normal signal handler:
-
-Asynchronous:
-
-signal
-  ↓
-handler()
-
-
-Here:
-
-sigwait()
-   ↓
-BLOCK
-   ↓
-signal arrives
-   ↓
-sigwait() returns
-
-*/
+// kill -USR1 <PID>
 
 

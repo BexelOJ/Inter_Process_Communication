@@ -1,48 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <string.h>
 
-#define FIFO_PATH "/tmp/ipc_fifo_writer"
+#define FIFO_NAME "/tmp/ipc_fifo_writer"
 
 int main(void)
 {
     int fd;
+    const char *message = "Hello from FIFO Writer";
 
-    if (mkfifo(FIFO_PATH, 0666) == -1)
+    /* Create FIFO */
+    if (mkfifo(FIFO_NAME, 0666) == -1)
     {
         perror("mkfifo");
     }
 
     printf("Opening FIFO for writing...\n");
 
-    fd = open(FIFO_PATH, O_WRONLY);
+    fd = open(FIFO_NAME, O_WRONLY);
 
     if (fd == -1)
     {
         perror("open");
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    const char* message = "Hello from FIFO writer";
+    printf("Writing: %s\n", message);
 
-    write(fd, message, strlen(message) + 1);
+    if (write(fd, message, strlen(message) + 1) == -1)
+    {
+        perror("write");
+        close(fd);
+        return EXIT_FAILURE;
+    }
 
-    printf("Message sent\n");
+    printf("Data written successfully.\n");
 
     close(fd);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-
-/*
-//---------------------------------------------------
-Dedicated FIFO writer.
-
-//---------------------------------------------------
-*/
 
 

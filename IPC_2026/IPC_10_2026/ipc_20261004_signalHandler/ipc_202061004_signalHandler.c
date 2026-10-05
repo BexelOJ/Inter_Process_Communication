@@ -1,41 +1,46 @@
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 
 void signalHandler(int signalNumber)
 {
-    printf("Signal received: %d\n", signalNumber);
+    if (signalNumber == SIGINT)
+    {
+        printf("SIGINT received.\n");
+    }
+    else if (signalNumber == SIGTERM)
+    {
+        printf("SIGTERM received.\n");
+    }
+    else if (signalNumber == SIGUSR1)
+    {
+        printf("SIGUSR1 received.\n");
+    }
 }
 
 int main(void)
 {
-    printf("PID: %d\n", getpid());
-
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
     signal(SIGUSR1, signalHandler);
 
-    printf("Waiting for SIGUSR1...\n");
-    printf("Run from another terminal:\n");
-    printf("kill -USR1 %d\n", getpid());
+    printf("PID: %d\n", getpid());
+    printf("Waiting for signals...\n");
 
     while (1)
     {
         pause();
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
-/*
+// FROM ANOTHER TERMINAL:
 
-Register a signal handler using signal()
-
-
-From another terminal:
-
-kill -USR1 <PID>
-
-
-*/
+// kill -USR1 <PID>
+// or
+// kill -TERM <PID>
 
 
