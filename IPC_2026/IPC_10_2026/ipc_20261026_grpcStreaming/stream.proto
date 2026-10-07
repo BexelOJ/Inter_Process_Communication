@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package stream;
+
+service SensorService
+{
+    rpc StreamTemperature(
+        TemperatureRequest)
+        returns (stream Temperature);
+}
+
+message TemperatureRequest
+{
+    string sensor = 1;
+}
+
+message Temperature
+{
+    float value = 1;
+}
+
+
+
