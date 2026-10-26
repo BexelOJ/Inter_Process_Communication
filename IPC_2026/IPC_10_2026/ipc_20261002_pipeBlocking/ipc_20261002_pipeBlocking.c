@@ -5,8 +5,9 @@
 int main(void)
 {
     int pipeFd[2];
-    pid_t pid;
     char buffer[100];
+
+    pid_t pid;
 
     if (pipe(pipeFd) == -1)
     {
@@ -36,6 +37,7 @@ int main(void)
 
         close(pipeFd[0]);
     }
+
     else
     {
         close(pipeFd[0]);

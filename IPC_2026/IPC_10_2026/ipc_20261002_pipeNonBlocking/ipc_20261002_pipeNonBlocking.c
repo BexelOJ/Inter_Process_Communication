@@ -8,6 +8,7 @@ int main(void)
 {
     int pipeFd[2];
     char buffer[100];
+
     ssize_t result;
 
     if (pipe(pipeFd) == -1)
@@ -45,6 +46,7 @@ int main(void)
             perror("read");
         }
     }
+
     else
     {
         printf("Read %zd bytes\n", result);

@@ -21,7 +21,7 @@ int main(void)
         printf("Child process\n");
         printf("PID : %d\n", getpid());
 
-        exit(42);
+        exit(45);
     }
 
     printf("Parent waiting for child...\n");

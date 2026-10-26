@@ -44,6 +44,7 @@ int main(void)
 
         close(pipeFd[0]);
     }
+
     else
     {
         close(pipeFd[0]);

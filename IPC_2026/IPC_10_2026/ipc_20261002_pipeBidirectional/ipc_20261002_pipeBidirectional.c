@@ -52,6 +52,7 @@ int main(void)
         close(parentToChild[0]);
         close(childToParent[1]);
     }
+
     else
     {
         /* Parent */
